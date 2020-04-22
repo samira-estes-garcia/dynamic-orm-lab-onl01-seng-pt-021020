@@ -1,5 +1,6 @@
 require_relative "../config/environment.rb"
 require 'active_support/inflector'
+require 'pry'
 
 class InteractiveRecord
   
@@ -10,18 +11,21 @@ class InteractiveRecord
   def self.column_names
     DB[:conn].results_as_hash = true 
     
-    sql = "pragma table_info('#{table_name}')"
+    sql = "pragma table_info('#{self.table_name}')"
+    
+    #pragma gets or retireves info about table
     
     table_info = DB[:conn].execute(sql)
     column_names = [ ]
     table_info.each do |row|
       column_names << row["name"]
     end
-    column_names.compact
+    column_names.compact #removes nil value
   end
   
   def initialize(options={})
     options.each do |property, value|
+      binding.pry
       self.send("#{property}=", value)
     end
   end
@@ -35,6 +39,7 @@ class InteractiveRecord
   end
   
   def values_for_insert
+    #stores object information into table
     values = []
     self.class.column_names.each do |col_name|
       values << "'#{send(col_name)}'" unless send(col_name).nil?
